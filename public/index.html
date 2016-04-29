@@ -33,7 +33,31 @@
     </head>
     <body ng-app="picAlert">
         <!-- Header -->
-
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+			<!--<div class="container-fluid">-->
+			<!-- navbar logo -->
+			<div class="navbar-header">
+				<div class="navbar-logo-wrapper">
+					</a>
+				</div>
+			</div>
+			<!-- navigation links -->
+			<ul class="nav navbar-nav">
+				<li><a href="/devices">Devices</a></li>
+				<li><a href="/alerts">Alerts</a></li>
+                <li><a href="/alerts">Account</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/about">About PicAlert</a></li>
+                        <li><a href="/ourteam">Our Team</a></li>
+                    </ul>
+                </li>
+				<li><a href="/contact">Contact Us</a></li>
+			</ul>
+			<p style="text-align:right; padding-top:15px; padding-right:30px;"><a href="/login">Login</a></p>
+			<!--</div>-->
+		</nav>
         <!-- ANGULAR DYNAMIC CONTENT -->
         <div ng-view class="row"></div><br>
     </body>
