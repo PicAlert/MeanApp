@@ -3,5 +3,6 @@ angular.module('picAlert', [
   'appRoutes',
   'HomeCtrl',
   '404Ctrl',
-  'LoginCtrl'
+  'LoginCtrl',
+  'DevicesCtrl'
 ]);
