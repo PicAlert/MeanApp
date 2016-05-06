@@ -1,6 +1,14 @@
 /* Body */
-
-
+html, body. div{
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+}
+.row {
+  padding-right: 0px;
+  margin-right: 0px;
+}
+/* Login */
 
 /* Navbar */
 .navbar-brand { position: relative; z-index: 2; }
@@ -13,7 +21,7 @@
 
 #signup-btn {
     background-color: #333;
-    color: #ddd;
+    color: #eee;
 }
 .navbar.navbar-inverse { background-color: #222; }
 .navbar>li { float: right; }
