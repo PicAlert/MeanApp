@@ -20,6 +20,12 @@ angular.module('appRoutes', []).config(['$routeProvider', '$locationProvider', f
 			controller: 'LoginController'
 		})
 
+		// Devices page
+		.when('/devices', {
+			templateUrl: 'views/devices.html',
+			controller: 'DevicesController'
+		})
+
         // Other pages
 
 
