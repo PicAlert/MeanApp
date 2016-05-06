@@ -22,8 +22,8 @@ var userSchema = mongoose.Schema({
     }],
     alerts: [{
         device_id: String,
-        time_stamp: Date,
-        picture: Image
+        time_stamp: Date
+        //picture: Image
     }]
 });
 

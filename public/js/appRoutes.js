@@ -7,16 +7,22 @@ angular.module('appRoutes', []).config(['$routeProvider', '$locationProvider', f
 			templateUrl: 'views/home.html',
 			controller: 'HomeController'
 		})
-        
+
         // 404 page
 		.when('/404', {
 			templateUrl: 'views/404.html',
 			controller: '404Controller'
 		})
-        
+
+        // Login page
+		.when('/login', {
+			templateUrl: 'views/login.html',
+			controller: 'LoginController'
+		})
+
         // Other pages
 
-        
+
         // Redirect all others to 404
 		.otherwise('/404');
 
