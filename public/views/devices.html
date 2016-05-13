@@ -6,31 +6,47 @@
                 <i id="add-new-device" class="fa fa-plus" aria-hidden="true"></i>
             </div>
             <div class="panel-body">
-                <div class="device-dashboard">
-                    <div class="device-status-column">
-                        <div class="device-status-armed">
-                            <div>
-                                <i class="fa fa-eye" aria-hidden="true"></i>
-                                <!-- when device.armed is wired up, use ng-hide angular property
-                                <div class="ng-hide" ng-hide="!device.armed">
-                                    <i class="fa fa-eye-slash" aria-hidden="true"></i>
-                                </div>
-                                -->
-                            </div>
-                        </div>
-                        <div class="device-status-alerts">
-                            0 <!-- reflects number of unread alerts -->
-                        </div>
-                    </div>
-                    <div class="device-info-column">
-                        <div>title</div>
-                        <div>serial number</div>
-                    </div>
-                    <div class="device-control-column">
-                        <i class="fa fa-pencil device-control-edit" aria-hidden="true"></i>
-                        <i class="fa fa-times device-control-remove" aria-hidden="true"></i>
-                    </div>
-                </div>
+                <table class="device-dashboard">
+                    <tr>
+                        <td class="device-status-column">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <i class="fa fa-eye" aria-hidden="true"></i>
+                                        <!-- when device.armed is wired up, use ng-hide angular property
+                                        <div class="ng-hide" ng-hide="!device.armed">
+                                            <i class="fa fa-eye-slash" aria-hidden="true"></i>
+                                        </div>
+                                        -->
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        0 <!-- reflects number of unread alerts -->
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="device-info-column">
+                            <div>title</div>
+                            <div>serial number</div>
+                        </td>
+                        <td class="device-control-column">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <i class="fa fa-pencil device-control-edit" aria-hidden="true"></i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <i class="fa fa-times device-control-remove" aria-hidden="true"></i>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
