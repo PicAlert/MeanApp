@@ -73,20 +73,3 @@ html, body. div{
 #add-new-device {
     float: right;
 }
-
-.device-status-column {
-    float: left;
-}
-
-.device-info-column {
-    display: inline-block;
-}
-
-.device-control-column {
-    float: right;
-    clear: none;
-}
-
-.device-status-armed, .device-status-alerts, .device-control-edit, .device-control-remove {
-    display: block;
-}
