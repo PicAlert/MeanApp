@@ -4,5 +4,6 @@ angular.module('picAlert', [
   'HomeCtrl',
   '404Ctrl',
   'LoginCtrl',
-  'DevicesCtrl'
+  'DevicesCtrl',
+  'SignUpCtrl'
 ]);
