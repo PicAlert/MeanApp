@@ -73,3 +73,30 @@ html, body. div{
 #add-new-device {
     float: right;
 }
+
+.device-dashboard {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.device-status-column, .device-control-column {
+    width: 20px;
+}
+
+/*
+.device-status-column, .device-info-column, .device-control-column {
+    border: 1px solid black;
+}
+*/
+
+.device-info-name {
+    font-weight: bold;
+}
+
+.device-info-id {
+    color: grey;
+}
+
+.device-info-alerts {
+    text-align: center;
+}
