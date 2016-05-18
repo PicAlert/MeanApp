@@ -1,5 +1,5 @@
 angular.module('DevicesCtrl', []).controller('DevicesController', function($scope) {
-    $scope.devices: [{
+    $scope.devices = [{
         device_id: "ZX73RFT8922E",
         device_name: "Front Hall",
         secret_key: "secret_key", //Would be given to device by server when registered
@@ -16,5 +16,5 @@ angular.module('DevicesCtrl', []).controller('DevicesController', function($scop
         device_name: "Office", //Set by user
         secret_key: "secret_key", //Would be given to device by server when registered
         armed: true
-    }],
+    }];
 });

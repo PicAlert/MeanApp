@@ -6,30 +6,32 @@
                 <i id="add-new-device" class="fa fa-plus" aria-hidden="true"></i>
             </div>
             <div class="panel-body">
-                <table class="device-dashboard">
+                <table ng-repeat="device in devices" class="device-dashboard">
                     <tr>
                         <td class="device-status-column">
                             <table>
                                 <tr>
                                     <td>
-                                        <i class="fa fa-eye" aria-hidden="true"></i>
-                                        <!-- when device.armed is wired up, use ng-hide angular property
                                         <div class="ng-hide" ng-hide="!device.armed">
+                                            <i class="fa fa-eye" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="ng-hide" ng-hide="device.armed">
                                             <i class="fa fa-eye-slash" aria-hidden="true"></i>
                                         </div>
-                                        -->
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        0 <!-- reflects number of unread alerts -->
+                                        <span class="device-info-alerts">
+                                            0 <!-- reflects number of unread alerts -->
+                                        </span>
                                     </td>
                                 </tr>
                             </table>
                         </td>
                         <td class="device-info-column">
-                            <div>title</div>
-                            <div>serial number</div>
+                            <div class="device-info-name">{{device.device_name}}</div>
+                            <div class="device-info-id">{{device.device_id}}</div>
                         </td>
                         <td class="device-control-column">
                             <table>
