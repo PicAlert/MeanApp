@@ -1,0 +1,42 @@
+<div>
+	<h1>Sign Up</h1>
+	<p>Password must include 8 characters with at least one uppercase, one lowercase and one digit.
+	<form class="form form-horizontal well" action="demo_form.asp">
+	<div class="control-group">
+		<label for="name" class="control-label">Name</label>
+		<div class="controls">
+			<input type="text" class="input-block-level" required="required" display="table-cell" id="name"><br>
+		</div>
+		<label for="email" class="control-label">Email</label>
+		<div class="controls">
+			<input type="text" class="input-block-level" required="required" id="email"><br>
+		</div>
+	</div>
+	<div class="control-group">
+		<label for="pw" class="control-label">Password</label>
+		<div class="controls">
+			<input type="password" class="input-block-level" required="required" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+			title="Must contain at least one number and one uppercase and lowercase letter, and at least 
+			8 or more characters"id="pw"><br>
+		</div class="controls">
+		<label for="cpw" class="control-label">Confirm Password</label>
+		<div class="controls">
+			<input type="password" class="input-block-level" required="required" id="cpw" oninput="confirmPW()"><br>
+		</div>
+		<script type="text/javascript">
+    		function confirmPW() {
+        		var email = document.getElementById("pw").value
+        		var confemail = document.getElementById("cpw").value
+        		if(email != confemail) {
+        			alert('Password Not Matching!');
+    			}
+    		}
+		</script>
+	</div>
+	<div class="controls">
+		<input type="submit" value="Submit">
+    </div>
+	</form>
+	<p>Trouble signing up? <a href=/contact>Contact PicAlert Team</a></p> 
+	<p>Return to <a href=/login>login page</a></p>
+</div>
