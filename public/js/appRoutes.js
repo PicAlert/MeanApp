@@ -28,9 +28,9 @@ angular.module('appRoutes', []).config(['$routeProvider', '$locationProvider', f
 		
 		// Sign Up page
 		.when('/signup', {
-			templateUrl: 'views/signup.html',
+			templateUrl: 'views/signin.html',
 			controller: 'SignUpController'
-		})
+		})	
 
         // Other pages
 

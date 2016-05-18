@@ -16,7 +16,7 @@ html, body. div{
 }
 
 /* Login */
-.login-panel {
+.login-panel, .signup-panel {
     position: absolute;
     top: 40%;
     left:50%;
@@ -25,7 +25,9 @@ html, body. div{
     max-width: 600px;
 }
 
-.login-header {
+
+
+.login-header, .signup-header {
     padding: 10px 0;
     margin-bottom: 15px;
     color: #333;
