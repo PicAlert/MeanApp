@@ -25,8 +25,6 @@ html, body. div{
     max-width: 600px;
 }
 
-
-
 .login-header, .signup-header {
     padding: 10px 0;
     margin-bottom: 15px;
@@ -36,6 +34,26 @@ html, body. div{
     background-color: transparent;
     border: 0;
 }
+
+label {
+    width:180px;
+    clear:left;
+    text-align:right;
+    padding-right:10px;
+}
+
+input, label {
+    float:left;
+}
+
+#sub {
+	float: right;
+  	position: relative;
+  	left: 440%; /* or right 50% */
+  	text-align: left;
+  	margin-top:10px;
+}
+
 .login-btn {
     width: 100%;
 }
