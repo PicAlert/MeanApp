@@ -1,0 +1,38 @@
+/* SignUp */
+label {
+    width:180px;
+    clear:left;
+    text-align:right;
+    padding-right:10px;
+}
+
+input, label {
+    float:left;
+}
+
+#sub {
+	float: right;
+  	position: relative;
+  	left: -40%; 
+  	text-align: left;
+  	margin-top:10px;
+}
+
+.signup-panel {
+    position: absolute;
+    top: 40%;
+    left:50%;
+    transform: translate(-50%,-50%);
+    padding: 20px;
+    max-width: 600px;
+}
+
+.signup-header {
+    padding: 10px 0;
+    margin-bottom: 15px;
+    color: #333;
+    text-align: center;
+    text-shadow: none;
+    background-color: transparent;
+    border: 0;
+}

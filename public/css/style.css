@@ -16,7 +16,7 @@ html, body. div{
 }
 
 /* Login */
-.login-panel, .signup-panel {
+.login-panel {
     position: absolute;
     top: 40%;
     left:50%;
@@ -25,7 +25,7 @@ html, body. div{
     max-width: 600px;
 }
 
-.login-header, .signup-header {
+.login-header {
     padding: 10px 0;
     margin-bottom: 15px;
     color: #333;
@@ -42,25 +42,7 @@ html, body. div{
     width: 100px;
 }
 
-/* SignUp */
-label {
-    width:180px;
-    clear:left;
-    text-align:right;
-    padding-right:10px;
-}
 
-input, label {
-    float:left;
-}
-
-#sub {
-	float: right;
-  	position: relative;
-  	left: 440%; 
-  	text-align: left;
-  	margin-top:10px;
-}
 
 /* Navbar */
 .navbar-brand { position: relative; z-index: 2; }
