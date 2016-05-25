@@ -1,0 +1,65 @@
+h1 {
+  color: #900000;
+  font-size: 250%;
+  font-family:Impact;
+  text-decoration: underline;
+}
+body {
+  background-image: url("../img/11.jpg")
+}
+p {
+  color: #336699;
+  font-family: courier;
+  font-size: 100%;
+
+}
+tr {
+  height: 50px;
+}
+.emailPicture{
+  height: 25px;
+  width: 25px;
+}
+.dogPicture{
+   height: 200px;
+   width: 200px;
+   border-radius:80%;
+}
+
+img {
+    color: #FF33CC;
+    border-top-style: transparent;
+    border-right-style: transparent;
+    border-bottom-style: transparent;
+    border-left-style: transparent;
+}
+.catPicture{
+    height: 200px;
+    width: 200px;
+    border-radius: 80%;
+}
+.lionPicture{
+    height: 200px;
+    width: 200px;
+    border-radius: 80%;
+}
+.mariePicture{
+  height: 200px;
+  width: 200px;
+  border-radius: 80%;
+}
+.elePicture{
+  height: 200px;
+  width: 200px;
+  border-radius: 80%;
+}
+.center{
+   margin: auto;
+   width: 10%;
+    padding: 10px;
+}
+
+td {
+  color: black;
+  font-family:Comic Sans MS, cursive, sans-serif;
+}
