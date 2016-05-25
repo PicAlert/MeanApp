@@ -35,6 +35,14 @@ html, body. div{
     border: 0;
 }
 
+.login-btn {
+    width: 100%;
+}
+.entry-title {
+    width: 100px;
+}
+
+/* SignUp */
 label {
     width:180px;
     clear:left;
@@ -49,16 +57,9 @@ input, label {
 #sub {
 	float: right;
   	position: relative;
-  	left: 440%; /* or right 50% */
+  	left: 440%; 
   	text-align: left;
   	margin-top:10px;
-}
-
-.login-btn {
-    width: 100%;
-}
-.entry-title {
-    width: 100px;
 }
 
 /* Navbar */
