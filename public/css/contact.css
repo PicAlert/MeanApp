@@ -1,0 +1,13 @@
+h1 {
+  font-size: 250%;
+  font-family: impact;
+  text-decoration: underline;
+  color: #900000;
+}
+body {
+  background-image: url("../img/11.jpg");
+}
+p {
+  font-family: fantasy;
+  font-size: 125%;
+}
