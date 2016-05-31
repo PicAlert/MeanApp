@@ -1,0 +1,36 @@
+<div class="container">
+    <h1>Alerts History</h1>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Time</th>
+            <th>Location</th>
+            <th>Photo Taken</th>
+            <th>&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!--
+        <tr>
+            <td><input class="form-control" ng-model="alert.time"></td>
+            <td><input class="form-control" ng-model="alert.location"></td>
+            <td><input class="form-control" ng-model="alert.picture"></td>
+            <td><button class="btn btn-primary" ng-click="">Add Contact</button></td>
+            <td><button class="btn btn-info" ng-click="">Update</button>&nbsp;&nbsp;
+                <button class="btn btn-info" ng-click="">Clear</button></td>
+        </tr>
+        -->
+        <tr ng-repeat="alert in alerts">
+            <td>{{alert.time}}</td>
+            <td>{{alert.location}}</td>
+            <td><img src={{alert.picture}}  width="250"></td>
+            <td><button class="btn btn-danger" ng-click="remove(contact._id)">Remove</button></td>
+
+           <!-- <td><button class="btn btn-warning" ng-click="edit(contact._id)">Edit</button></td> -->
+
+
+
+        </tr>
+        </tbody>
+    </table>
+</div>
