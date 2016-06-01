@@ -35,12 +35,12 @@ angular.module('appRoutes', []).config(['$routeProvider', '$locationProvider', f
 		// About Page
 		.when('/about', {
 			templateUrl: 'views/aboutPage.html',
-			controller: 'SignUpController'
+			controller: 'AboutController'
 		})
 
 		.when('/contact', {
 			templateUrl: 'views/contact.html',
-			controller: 'SignUpController'
+			controller: 'ContactController'
 		})
 
 		// Alerts Page
