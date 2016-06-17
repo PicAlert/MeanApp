@@ -35,38 +35,22 @@ QUnit.module( "offset", { setup: function() {
 	forceScroll.detach();
 }, teardown: moduleTeardown } );
 
-/*
-	Closure-compiler will roll static methods off of the jQuery object and so they will
-	not be passed with the jQuery object across the windows. To differentiate this, the
-	testIframe callbacks use the "$" symbol to refer to the jQuery object passed from
-	the iframe window and the "jQuery" symbol is used to access any static methods.
-*/
-
 QUnit.test( "empty set", function( assert ) {
 	assert.expect( 2 );
 	assert.strictEqual( jQuery().offset(), undefined, "offset() returns undefined for empty set (#11962)" );
 	assert.strictEqual( jQuery().position(), undefined, "position() returns undefined for empty set (#11962)" );
 } );
 
-QUnit.test( "object without getBoundingClientRect", function( assert ) {
-	assert.expect( 2 );
-
-	// Simulates a browser without gBCR on elements, we just want to return 0,0
-	var result = jQuery( { ownerDocument: document } ).offset();
-	assert.equal( result.top, 0, "Check top" );
-	assert.equal( result.left, 0, "Check left" );
-} );
-
-QUnit.test( "disconnected node", function( assert ) {
+QUnit.test( "disconnected element", function( assert ) {
 	assert.expect( 2 );
 
 	var result = jQuery( document.createElement( "div" ) ).offset();
 
-	// These tests are solely for 2.x/1.x consistency
+	// These tests are solely for master/compat consistency
 	// Retrieving offset on disconnected/hidden elements is not officially
 	// valid input, but will return zeros for back-compat
-	assert.equal( result.top, 0, "Check top" );
-	assert.equal( result.left, 0, "Check left" );
+	assert.equal( result.top, 0, "Retrieving offset on disconnected elements returns zeros (gh-2310)" );
+	assert.equal( result.left, 0, "Retrieving offset on disconnected elements returns zeros (gh-2310)" );
 } );
 
 QUnit.test( "hidden (display: none) element", function( assert ) {
@@ -77,14 +61,14 @@ QUnit.test( "hidden (display: none) element", function( assert ) {
 
 	node.remove();
 
-	// These tests are solely for 2.x/1.x consistency
+	// These tests are solely for master/compat consistency
 	// Retrieving offset on disconnected/hidden elements is not officially
 	// valid input, but will return zeros for back-compat
 	assert.equal( result.top, 0, "Retrieving offset on hidden elements returns zeros (gh-2310)" );
 	assert.equal( result.left, 0, "Retrieving offset on hidden elements returns zeros (gh-2310)" );
 } );
 
-testIframe( "offset/absolute", "absolute", function( $, iframe, document, assert ) {
+testIframe( "absolute", "offset/absolute.html", function( assert, $, iframe ) {
 	assert.expect( 4 );
 
 	var doc = iframe.document,
@@ -109,7 +93,7 @@ testIframe( "offset/absolute", "absolute", function( $, iframe, document, assert
 	} );
 } );
 
-testIframe( "offset/absolute", "absolute", function( $, window, document, assert ) {
+testIframe( "absolute", "offset/absolute.html", function( assert, $ ) {
 	assert.expect( 178 );
 
 	var tests, offset;
@@ -194,7 +178,7 @@ testIframe( "offset/absolute", "absolute", function( $, window, document, assert
 	} );
 } );
 
-testIframe( "offset/relative", "relative", function( $, window, document, assert ) {
+testIframe( "relative", "offset/relative.html", function( assert, $ ) {
 	assert.expect( 64 );
 
 	// get offset
@@ -252,7 +236,7 @@ testIframe( "offset/relative", "relative", function( $, window, document, assert
 	} );
 } );
 
-testIframe( "offset/static", "static", function( $, window, document, assert ) {
+testIframe( "static", "offset/static.html", function( assert, $ ) {
 	assert.expect( 80 );
 
 	// get offset
@@ -314,7 +298,7 @@ testIframe( "offset/static", "static", function( $, window, document, assert ) {
 	} );
 } );
 
-testIframe( "offset/fixed", "fixed", function( $, window, document, assert ) {
+testIframe( "fixed", "offset/fixed.html", function( assert, $, window ) {
 	assert.expect( 34 );
 
 	var tests, $noTopLeft;
@@ -404,7 +388,7 @@ testIframe( "offset/fixed", "fixed", function( $, window, document, assert ) {
 	}
 } );
 
-testIframe( "offset/table", "table", function( $, window, document, assert ) {
+testIframe( "table", "offset/table.html", function( assert, $ ) {
 	assert.expect( 4 );
 
 	assert.equal( $( "#table-1" ).offset().top, 6, "jQuery('#table-1').offset().top" );
@@ -414,8 +398,8 @@ testIframe( "offset/table", "table", function( $, window, document, assert ) {
 	assert.equal( $( "#th-1" ).offset().left, 10, "jQuery('#th-1').offset().left" );
 } );
 
-testIframe( "offset/scroll", "scroll", function( $, win, doc, assert ) {
-	assert.expect( 24 );
+testIframe( "scroll", "offset/scroll.html", function( assert, $, win ) {
+	assert.expect( 26 );
 
 	assert.equal( $( "#scroll-1" ).offset().top, 7, "jQuery('#scroll-1').offset().top" );
 	assert.equal( $( "#scroll-1" ).offset().left, 7, "jQuery('#scroll-1').offset().left" );
@@ -423,11 +407,11 @@ testIframe( "offset/scroll", "scroll", function( $, win, doc, assert ) {
 	assert.equal( $( "#scroll-1-1" ).offset().top, 11, "jQuery('#scroll-1-1').offset().top" );
 	assert.equal( $( "#scroll-1-1" ).offset().left, 11, "jQuery('#scroll-1-1').offset().left" );
 
-	// These tests are solely for 2.x/1.x consistency
+	// These tests are solely for master/compat consistency
 	// Retrieving offset on disconnected/hidden elements is not officially
 	// valid input, but will return zeros for back-compat
-	// assert.equal( $( "#hidden" ).offset().top, 0, "Hidden elements do not subtract scroll" );
-	// assert.equal( $( "#hidden" ).offset().left, 0, "Hidden elements do not subtract scroll" );
+	assert.equal( $( "#hidden" ).offset().top, 0, "Hidden elements do not subtract scroll" );
+	assert.equal( $( "#hidden" ).offset().left, 0, "Hidden elements do not subtract scroll" );
 
 	// scroll offset tests .scrollTop/Left
 	assert.equal( $( "#scroll-1" ).scrollTop(), 5, "jQuery('#scroll-1').scrollTop()" );
@@ -458,26 +442,10 @@ testIframe( "offset/scroll", "scroll", function( $, win, doc, assert ) {
 
 	// test jQuery using parent window/document
 	// jQuery reference here is in the iframe
-	// Support: Android 2.3 only
-	// Android 2.3 is sometimes off by a few pixels.
 	window.scrollTo( 0, 0 );
-	if ( /android 2\.3/i.test( navigator.userAgent ) ) {
-		assert.ok(
-			Math.abs( $( window ).scrollTop() ) < 5,
-			"jQuery(window).scrollTop() other window"
-		);
-	} else {
-		assert.equal( $( window ).scrollTop(), 0, "jQuery(window).scrollTop() other window" );
-	}
+	assert.equal( $( window ).scrollTop(), 0, "jQuery(window).scrollTop() other window" );
 	assert.equal( $( window ).scrollLeft(), 0, "jQuery(window).scrollLeft() other window" );
-	if ( /android 2\.3/i.test( navigator.userAgent ) ) {
-		assert.ok(
-			Math.abs( $( window ).scrollTop() ) < 5,
-			"jQuery(window).scrollTop() other document"
-		);
-	} else {
-		assert.equal( $( document ).scrollTop(), 0, "jQuery(window).scrollTop() other document" );
-	}
+	assert.equal( $( document ).scrollTop(), 0, "jQuery(window).scrollTop() other document" );
 	assert.equal( $( document ).scrollLeft(), 0, "jQuery(window).scrollLeft() other document" );
 
 	// Tests scrollTop/Left with empty jquery objects
@@ -489,7 +457,7 @@ testIframe( "offset/scroll", "scroll", function( $, win, doc, assert ) {
 	assert.strictEqual( $().scrollLeft(), undefined, "jQuery().scrollLeft() testing getter on empty jquery object" );
 } );
 
-testIframe( "offset/body", "body", function( $, window, document, assert ) {
+testIframe( "body", "offset/body.html", function( assert, $ ) {
 	assert.expect( 4 );
 
 	assert.equal( $( "body" ).offset().top, 1, "jQuery('#body').offset().top" );
@@ -502,10 +470,10 @@ QUnit.test( "chaining", function( assert ) {
 	assert.expect( 3 );
 
 	var coords = { "top":  1, "left":  1 };
-	assert.equal( jQuery("#absolute-1").offset(coords).selector, "#absolute-1", "offset(coords) returns jQuery object" );
-	assert.equal( jQuery("#non-existent").offset(coords).selector, "#non-existent", "offset(coords) with empty jQuery set returns jQuery object" );
-	assert.equal( jQuery("#absolute-1").offset(undefined).selector, "#absolute-1", "offset(undefined) returns jQuery object (#5571)" );
-});
+	assert.equal( jQuery( "#absolute-1" ).offset( coords ).jquery, jQuery.fn.jquery, "offset(coords) returns jQuery object" );
+	assert.equal( jQuery( "#non-existent" ).offset( coords ).jquery, jQuery.fn.jquery, "offset(coords) with empty jQuery set returns jQuery object" );
+	assert.equal( jQuery( "#absolute-1" ).offset( undefined ).jquery, jQuery.fn.jquery, "offset(undefined) returns jQuery object (#5571)" );
+} );
 
 QUnit.test( "offsetParent", function( assert ) {
 	assert.expect( 13 );
@@ -565,7 +533,7 @@ QUnit.test( "fractions (see #7730 and #7885)", function( assert ) {
 
 	result = div.offset();
 
-	// Support: Chrome 45-46+
+	// Support: Chrome <=45 - 46
 	// In recent Chrome these values differ a little.
 	assert.ok( Math.abs( result.top - expected.top ) < 0.25, "Check top within 0.25 of expected" );
 	assert.equal( result.left, expected.left, "Check left" );
@@ -578,14 +546,11 @@ QUnit.test( "iframe scrollTop/Left (see gh-1945)", function( assert ) {
 
 	var ifDoc = jQuery( "#iframe" )[ 0 ].contentDocument;
 
-	// Mobile Safari and Android 2.3 resize the iframe by its content
-	// meaning it's not possible to scroll the iframe only its parent element.
+	// Mobile Safari resize the iframe by its content meaning it's not possible to scroll
+	// the iframe but only its parent element.
 	// It seems (not confirmed) in android 4.0 it's not possible to scroll iframes from the code.
-	// Opera 12.1x also has problems with this test.
 	if ( /iphone os/i.test( navigator.userAgent ) ||
-	    /android 2\.3/i.test( navigator.userAgent ) ||
-	    /android 4\.0/i.test( navigator.userAgent ) ||
-		/opera.*version\/12\.1/i.test( navigator.userAgent ) ) {
+	    /android 4\.0/i.test( navigator.userAgent ) ) {
 		assert.equal( true, true, "Can't scroll iframes in this environment" );
 		assert.equal( true, true, "Can't scroll iframes in this environment" );
 

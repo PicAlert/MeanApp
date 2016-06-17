@@ -7,6 +7,7 @@ h1 {
 body {
   background-image: url("../img/11.jpg")
 }
+
 p {
   color: #336699;
   font-family: courier;
@@ -16,10 +17,12 @@ p {
 tr {
   height: 50px;
 }
+
 .emailPicture{
   height: 25px;
   width: 25px;
 }
+
 .dogPicture{
    height: 200px;
    width: 200px;

@@ -1,8 +1,17 @@
+var fs = require( "fs" );
 
 module.exports = function( Release ) {
 
 	var
-		files = [ "dist/jquery.js", "dist/jquery.min.js", "dist/jquery.min.map" ],
+		files = [
+			"dist/jquery.js",
+			"dist/jquery.min.js",
+			"dist/jquery.min.map",
+			"dist/jquery.slim.js",
+			"dist/jquery.slim.min.js",
+			"dist/jquery.slim.min.map",
+			"src/core.js"
+		],
 		cdn = require( "./release/cdn" ),
 		dist = require( "./release/dist" ),
 		ensureSizzle = require( "./release/ensure-sizzle" ),
@@ -20,6 +29,15 @@ module.exports = function( Release ) {
 			ensureSizzle( Release, callback );
 		},
 		/**
+		 * Set the version in the src folder for distributing AMD
+		 */
+		_setSrcVersion: function() {
+			var corePath = __dirname + "/../src/core.js",
+				contents = fs.readFileSync( corePath, "utf8" );
+			contents = contents.replace( /@VERSION/g, Release.newVersion );
+			fs.writeFileSync( corePath, contents, "utf8" );
+		},
+		/**
 		 * Generates any release artifacts that should be included in the release.
 		 * The callback must be invoked with an array of files that should be
 		 * committed before creating the tag.
@@ -27,7 +45,13 @@ module.exports = function( Release ) {
 		 */
 		generateArtifacts: function( callback ) {
 			Release.exec( "grunt", "Grunt command failed" );
+			Release.exec(
+				"grunt custom:-ajax,-effects,-deprecated --filename=jquery.slim.js && " +
+					"grunt remove_map_comment --filename=jquery.slim.js",
+				"Grunt custom failed"
+			);
 			cdn.makeReleaseCopies( Release );
+			Release._setSrcVersion();
 			callback( files );
 		},
 		/**
@@ -47,7 +71,7 @@ module.exports = function( Release ) {
 		 */
 		dist: function( callback ) {
 			cdn.makeArchives( Release, function() {
-				dist( Release, callback );
+				dist( Release, files, callback );
 			} );
 		}
 	} );
@@ -56,5 +80,6 @@ module.exports = function( Release ) {
 module.exports.dependencies = [
 	"archiver@0.14.2",
 	"shelljs@0.7.0",
-	"npm@2.3.0"
+	"npm@2.3.0",
+	"chalk@1.1.1"
 ];

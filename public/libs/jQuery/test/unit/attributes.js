@@ -128,8 +128,8 @@ QUnit.test( "attr(String)", function( assert ) {
 	assert.equal( jQuery( option ).prop( "selected" ), true, "Make sure that a single option is selected, even when in an optgroup." );
 
 	$img = jQuery( "<img style='display:none' width='215' height='53' src='data/1x1.jpg'/>" ).appendTo( "body" );
-	assert.equal( $img.attr( "width" ), "215", "Retrieve width attribute an an element with display:none." );
-	assert.equal( $img.attr( "height" ), "53", "Retrieve height attribute an an element with display:none." );
+	assert.equal( $img.attr( "width" ), "215", "Retrieve width attribute on an element with display:none." );
+	assert.equal( $img.attr( "height" ), "53", "Retrieve height attribute on an element with display:none." );
 
 	// Check for style support
 	styleElem = jQuery( "<div/>" ).appendTo( "#qunit-fixture" ).css( {
@@ -220,7 +220,8 @@ QUnit.test( "attr(String, Function)", function( assert ) {
 QUnit.test( "attr(Hash)", function( assert ) {
 	assert.expect( 3 );
 	var pass = true;
-	jQuery( "div" ).attr( {
+
+	jQuery( "#qunit-fixture div" ).attr( {
 		"foo": "baz",
 		"zoo": "ping"
 	} ).each( function() {
@@ -258,7 +259,7 @@ QUnit.test( "attr(String, Object)", function( assert ) {
 		attributeNode, commentNode, textNode, obj,
 		table, td, j, type,
 		check, thrown, button, $radio, $radios, $svg,
-		div = jQuery( "div" ).attr( "foo", "bar" ),
+		div = jQuery( "#qunit-fixture div" ).attr( "foo", "bar" ),
 		i = 0,
 		fail = false;
 
@@ -451,7 +452,9 @@ QUnit.test( "attr(String, Object)", function( assert ) {
 
 	$radio = jQuery( "<input>", {
 		"value": "sup",
-		"type": "radio"
+		// Use uppercase here to ensure the type
+		// attrHook is still used
+		"TYPE": "radio"
 	} ).appendTo( "#testForm" );
 	assert.equal( $radio.val(), "sup", "Value is not reset when type is set after value on a radio" );
 
@@ -472,18 +475,36 @@ QUnit.test( "attr(String, Object)", function( assert ) {
 	assert.equal( jQuery( "#name" ).attr( "nonexisting", undefined ).attr( "nonexisting" ), undefined, ".attr('attribute', undefined) does not create attribute (#5571)" );
 } );
 
+QUnit.test( "attr(non-ASCII)", function( assert ) {
+	assert.expect( 2 );
+
+	var $div = jQuery( "<div Ω='omega' aØc='alpha'></div>" ).appendTo( "#qunit-fixture" );
+
+	assert.equal( $div.attr( "Ω" ), "omega", ".attr() exclusively lowercases characters in the range A-Z (gh-2730)" );
+	assert.equal( $div.attr( "AØC" ), "alpha", ".attr() exclusively lowercases characters in the range A-Z (gh-2730)" );
+} );
+
 QUnit.test( "attr - extending the boolean attrHandle", function( assert ) {
 	assert.expect( 1 );
 	var called = false,
-		_handle = jQuery.expr.attrHandle.checked || $.noop;
+		origAttrHandleHadChecked = "checked" in jQuery.expr.attrHandle,
+		origAttrHandleChecked = jQuery.expr.attrHandle.checked,
+		_handle = origAttrHandleChecked || $.noop;
 	jQuery.expr.attrHandle.checked = function() {
 		called = true;
 		_handle.apply( this, arguments );
 	};
-	jQuery( "input" ).attr( "checked" );
+	jQuery( "#qunit-fixture input" ).attr( "checked" );
 	called = false;
-	jQuery( "input" ).attr( "checked" );
+	jQuery( "#qunit-fixture input" ).attr( "checked" );
 	assert.ok( called, "The boolean attrHandle does not drop custom attrHandles" );
+
+	if ( origAttrHandleHadChecked ) {
+		jQuery.expr.attrHandle.checked = origAttrHandleChecked;
+	} else {
+		delete jQuery.expr.attrHandle.checked;
+	}
+
 } );
 
 QUnit.test( "attr(String, Object) - Loaded via XML document", function( assert ) {
@@ -575,7 +596,7 @@ QUnit.test( "removeAttr(String)", function( assert ) {
 	assert.equal( jQuery( "#fx-test-group" ).attr( "height", "3px" ).removeAttr( "height" ).get( 0 ).style.height, "1px", "Removing height attribute has no effect on height set with style attribute" );
 
 	jQuery( "#check1" ).removeAttr( "checked" ).prop( "checked", true ).removeAttr( "checked" );
-	assert.equal( document.getElementById( "check1" ).checked, false, "removeAttr sets boolean properties to false" );
+	assert.equal( document.getElementById( "check1" ).checked, true, "removeAttr should not set checked to false, since the checked attribute does NOT mirror the checked property" );
 	jQuery( "#text1" ).prop( "readOnly", true ).removeAttr( "readonly" );
 	assert.equal( document.getElementById( "text1" ).readOnly, false, "removeAttr sets boolean properties to false" );
 
@@ -737,9 +758,9 @@ QUnit.test( "prop('tabindex')", function( assert ) {
 
 QUnit.test( "image.prop( 'tabIndex' )", function( assert ) {
 	assert.expect( 1 );
-	var image = jQuery( "<img src='data/1x1.jpg' />" )
-		.appendTo( "#qunit-fixture" );
-	assert.equal( image.prop( "tabIndex" ), -1, "tabIndex on image" );
+	var image = jQuery("<img src='data/1x1.jpg' />")
+		.appendTo("#qunit-fixture");
+	assert.equal( image.prop("tabIndex" ), -1, "tabIndex on image" );
 } );
 
 QUnit.test( "prop('tabindex', value)", function( assert ) {
@@ -934,10 +955,10 @@ QUnit.test( "val() with non-matching values on dropdown list", function( assert 
 
 	var select6 = jQuery( "<select multiple id=\"select6\"><option value=\"1\">A</option><option value=\"2\">B</option></select>" ).appendTo( "#form" );
 	jQuery( select6 ).val( "nothing" );
-	assert.equal( jQuery( select6 ).val(), null, "Non-matching set (single value) on select-multiple" );
+	assert.deepEqual( jQuery( select6 ).val(), [], "Non-matching set (single value) on select-multiple" );
 
 	jQuery( select6 ).val( [ "nothing1", "nothing2" ] );
-	assert.equal( jQuery( select6 ).val(), null, "Non-matching set (array of values) on select-multiple" );
+	assert.deepEqual( jQuery( select6 ).val(), [], "Non-matching set (array of values) on select-multiple" );
 
 	select6.remove();
 } );
@@ -1016,7 +1037,7 @@ QUnit.test( "val(Function)", function( assert ) {
 QUnit.test( "val(Array of Numbers) (Bug #7123)", function( assert ) {
 	assert.expect( 4 );
 	jQuery( "#form" ).append( "<input type='checkbox' name='arrayTest' value='1' /><input type='checkbox' name='arrayTest' value='2' /><input type='checkbox' name='arrayTest' value='3' checked='checked' /><input type='checkbox' name='arrayTest' value='4' />" );
-	var elements = jQuery( "input[name=arrayTest]" ).val( [ 1, 2 ] );
+	var elements = jQuery( "#form input[name=arrayTest]" ).val( [ 1, 2 ] );
 	assert.ok( elements[ 0 ].checked, "First element was checked" );
 	assert.ok( elements[ 1 ].checked, "Second element was checked" );
 	assert.ok( !elements[ 2 ].checked, "Third element was unchecked" );
@@ -1619,5 +1640,24 @@ QUnit.test( "SVG class manipulation (gh-2199)", function( assert ) {
 
 		elem.toggleClass( "awesome" );
 		assert.ok( !elem.hasClass( "awesome" ), "SVG element (" + this + ") toggles the class off" );
+	} );
+} );
+
+QUnit.test( "non-lowercase boolean attribute getters should not crash", function( assert ) {
+	assert.expect( 3 );
+
+	var elem = jQuery( "<input checked required autofocus type='checkbox'>" );
+
+	jQuery.each( {
+		checked: "Checked",
+		required: "requiRed",
+		autofocus: "AUTOFOCUS"
+	}, function( lowercased, original ) {
+	    try {
+			assert.strictEqual( elem.attr( original ), lowercased,
+				"The '" + this + "' attribute getter should return the lowercased name" );
+		} catch ( e ) {
+			assert.ok( false, "The '" + this + "' attribute getter threw" );
+		}
 	} );
 } );

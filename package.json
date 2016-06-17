@@ -9,7 +9,8 @@
     "express": "~4.5.1",
     "express-session": "~1.11.3",
     "method-override": "~2.0.2",
-    "mongoose": "~3.8.0",
+    "mongo": "^0.1.0",
+    "mongoose": "^4.4.20",
     "bower": "latest"
   },
   "scripts": {

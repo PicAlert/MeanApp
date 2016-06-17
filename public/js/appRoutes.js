@@ -34,7 +34,7 @@ angular.module('appRoutes', []).config(['$routeProvider', '$locationProvider', f
 
 		// About Page
 		.when('/about', {
-			templateUrl: 'views/aboutPage.html',
+			templateUrl: 'views/about.html',
 			controller: 'AboutController'
 		})
 

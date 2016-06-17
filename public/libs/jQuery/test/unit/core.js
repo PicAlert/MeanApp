@@ -53,12 +53,17 @@ QUnit.test( "jQuery()", function( assert ) {
 
 	// Basic constructor's behavior
 	assert.equal( jQuery().length, 0, "jQuery() === jQuery([])" );
-	assert.equal( jQuery(undefined).length, 0, "jQuery(undefined) === jQuery([])" );
-	assert.equal( jQuery(null).length, 0, "jQuery(null) === jQuery([])" );
-	assert.equal( jQuery("").length, 0, "jQuery('') === jQuery([])" );
-	assert.equal( jQuery("#").length, 0, "jQuery('#') === jQuery([])" );
+	assert.equal( jQuery( undefined ).length, 0, "jQuery(undefined) === jQuery([])" );
+	assert.equal( jQuery( null ).length, 0, "jQuery(null) === jQuery([])" );
+	assert.equal( jQuery( "" ).length, 0, "jQuery('') === jQuery([])" );
+	assert.deepEqual( jQuery( obj ).get(), obj.get(), "jQuery(jQueryObj) == jQueryObj" );
 
-	assert.equal( jQuery(obj).selector, "div", "jQuery(jQueryObj) == jQueryObj" );
+	// Invalid #id goes to Sizzle which will throw an error (gh-1682)
+	try {
+		jQuery( "#" );
+	} catch ( e ) {
+		assert.ok( true, "Threw an error on #id with no id" );
+	}
 
 	// can actually yield more than one, when iframes are included, the window is an array as well
 	assert.equal( jQuery( window ).length, 1, "Correct number of elements generated for jQuery(window)" );
@@ -90,7 +95,7 @@ QUnit.test( "jQuery()", function( assert ) {
 	assert.equal( div.length, 4, "Correct number of elements generated for div hr code b" );
 	assert.equal( div.parent().length, 0, "Make sure that the generated HTML has no parent." );
 
-	assert.equal( jQuery( [ 1, 2, 3 ] ).get( 1 ), 2, "Test passing an array to the factory" );
+	assert.equal( jQuery( [ 1,2,3 ] ).get( 1 ), 2, "Test passing an array to the factory" );
 
 	assert.equal( jQuery( document.body ).get( 0 ), jQuery( "body" ).get( 0 ), "Test passing an html node to the factory" );
 
@@ -161,13 +166,27 @@ QUnit.test( "globalEval", function( assert ) {
 	assert.equal( window.globalEvalTest, 3, "Test context (this) is the window object" );
 } );
 
-
 QUnit.test( "globalEval with 'use strict'", function( assert ) {
 	assert.expect( 1 );
 	Globals.register( "strictEvalTest" );
 
 	jQuery.globalEval( "'use strict'; var strictEvalTest = 1;" );
 	assert.equal( window.strictEvalTest, 1, "Test variable declarations are global (strict mode)" );
+} );
+
+QUnit.test( "globalEval execution after script injection (#7862)", function( assert ) {
+	assert.expect( 1 );
+
+	var now,
+		script = document.createElement( "script" );
+
+	script.src = "data/longLoadScript.php?sleep=2";
+
+	now = jQuery.now();
+	document.body.appendChild( script );
+
+	jQuery.globalEval( "var strictEvalTest = " + jQuery.now() + ";" );
+	assert.ok( window.strictEvalTest - now < 500, "Code executed synchronously" );
 } );
 
 // This is not run in AMD mode
@@ -254,9 +273,8 @@ QUnit.test( "type", function( assert ) {
 } );
 
 QUnit.test( "type for `Symbol`", function( assert ) {
-
 	// Prevent reference errors
-	if ( typeof Symbol !== "function" ) {
+	if( typeof Symbol !== "function" ) {
 		assert.expect( 0 );
 		return;
 	}
@@ -265,11 +283,11 @@ QUnit.test( "type for `Symbol`", function( assert ) {
 
 	assert.equal( jQuery.type( Symbol() ), "symbol", "Symbol" );
 	assert.equal( jQuery.type( Object( Symbol() ) ), "symbol", "Symbol" );
-} );
+});
 
 QUnit.asyncTest( "isPlainObject", function( assert ) {
 
-	assert.expect( 22 );
+	assert.expect( 23 );
 
 	var pass, iframe, doc, parentObj, childObj, deep,
 		fn = function() {};
@@ -282,12 +300,13 @@ QUnit.asyncTest( "isPlainObject", function( assert ) {
 	assert.ok( jQuery.isPlainObject( { constructor: "foo" } ),
 		"plain object with primitive constructor property" );
 
-	parentObj = { foo: "bar" };
+	parentObj = {};
 	childObj = Object.create( parentObj );
-
-	assert.ok( !jQuery.isPlainObject( childObj ), "isPlainObject(Object.create({}))" );
+	assert.ok( !jQuery.isPlainObject( childObj ), "Object.create({})" );
+	parentObj.foo = "bar";
+	assert.ok( !jQuery.isPlainObject( childObj ), "Object.create({...})" );
 	childObj.bar = "foo";
-	assert.ok( !jQuery.isPlainObject( childObj ), "isPlainObject(Object.create({}))" );
+	assert.ok( !jQuery.isPlainObject( childObj ), "extend(Object.create({...}), ...)" );
 
 	// Not objects shouldn't be matched
 	assert.ok( !jQuery.isPlainObject( "" ), "string" );
@@ -356,13 +375,30 @@ QUnit.asyncTest( "isPlainObject", function( assert ) {
 	}
 } );
 
-//
 QUnit[ typeof Symbol === "function" ? "test" : "skip" ]( "isPlainObject(Symbol)", function( assert ) {
 	assert.expect( 2 );
 
 	assert.equal( jQuery.isPlainObject( Symbol() ), false, "Symbol" );
 	assert.equal( jQuery.isPlainObject( Object( Symbol() ) ), false, "Symbol inside an object" );
 } );
+
+QUnit.test( "isPlainObject(localStorage)", function( assert ) {
+	assert.expect( 1 );
+
+	assert.equal( jQuery.isPlainObject( localStorage ), false );
+} );
+
+QUnit[ "assign" in Object ? "test" : "skip" ]( "isPlainObject(Object.assign(...))",
+	function( assert ) {
+		assert.expect( 1 );
+
+		var parentObj = { foo: "bar" };
+		var childObj = Object.assign( Object.create( parentObj ), { bar: "foo" } );
+
+		assert.ok( !jQuery.isPlainObject( childObj ), "isPlainObject(Object.assign(...))" );
+	}
+);
+
 
 QUnit.test( "isFunction", function( assert ) {
 	assert.expect( 19 );
@@ -451,7 +487,7 @@ QUnit.test( "isFunction", function( assert ) {
 } );
 
 QUnit.test( "isNumeric", function( assert ) {
-	assert.expect( 38 );
+	assert.expect( 43 );
 
 	var t = jQuery.isNumeric,
 		ToString = function( value ) {
@@ -466,9 +502,6 @@ QUnit.test( "isNumeric", function( assert ) {
 	assert.ok( t( -16 ), "Negative integer number" );
 	assert.ok( t( 0 ), "Zero integer number" );
 	assert.ok( t( 32 ), "Positive integer number" );
-	assert.ok( t( "040" ), "Octal integer literal string" );
-	assert.ok( t( "0xFF" ), "Hexadecimal integer literal string" );
-	assert.ok( t( 0xFFF ), "Hexadecimal integer literal" );
 	assert.ok( t( "-1.6" ), "Negative floating point string" );
 	assert.ok( t( "4.536" ), "Positive floating point string" );
 	assert.ok( t( -2.6 ), "Negative floating point number" );
@@ -476,8 +509,28 @@ QUnit.test( "isNumeric", function( assert ) {
 	assert.ok( t( 1.5999999999999999 ), "Very precise floating point number" );
 	assert.ok( t( 8e5 ), "Exponential notation" );
 	assert.ok( t( "123e-2" ), "Exponential notation string" );
-	assert.ok( t( new ToString( "42" ) ), "Custom .toString returning number" );
+	assert.ok( t( "040" ), "Legacy octal integer literal string" );
+	assert.ok( t( "0xFF" ), "Hexadecimal integer literal string (0x...)" );
+	assert.ok( t( "0Xba" ), "Hexadecimal integer literal string (0X...)" );
+	assert.ok( t( 0xFFF ), "Hexadecimal integer literal" );
 
+	if ( +"0b1" === 1 ) {
+		assert.ok( t( "0b111110" ), "Binary integer literal string (0b...)" );
+		assert.ok( t( "0B111110" ), "Binary integer literal string (0B...)" );
+	} else {
+		assert.ok( true, "Browser does not support binary integer literal (0b...)" );
+		assert.ok( true, "Browser does not support binary integer literal (0B...)" );
+	}
+
+	if ( +"0o1" === 1 ) {
+		assert.ok( t( "0o76" ), "Octal integer literal string (0o...)" );
+		assert.ok( t( "0O76" ), "Octal integer literal string (0O...)" );
+	} else {
+		assert.ok( true, "Browser does not support octal integer literal (0o...)" );
+		assert.ok( true, "Browser does not support octal integer literal (0O...)" );
+	}
+
+	assert.equal( t( new ToString( "42" ) ), false, "Only limited to strings and numbers" );
 	assert.equal( t( "" ), false, "Empty string" );
 	assert.equal( t( "        " ), false, "Whitespace characters string" );
 	assert.equal( t( "\t\t" ), false, "Tab characters string" );
@@ -486,7 +539,7 @@ QUnit.test( "isNumeric", function( assert ) {
 	assert.equal( t( true ), false, "Boolean true literal" );
 	assert.equal( t( false ), false, "Boolean false literal" );
 	assert.equal( t( "bcfed5.2" ), false, "Number with preceding non-numeric characters" );
-	assert.equal( t( "7.2acdgs" ), false, "Number with trailling non-numeric characters" );
+	assert.equal( t( "7.2acdgs" ), false, "Number with trailing non-numeric characters" );
 	assert.equal( t( undefined ), false, "Undefined value" );
 	assert.equal( t( null ), false, "Null value" );
 	assert.equal( t( NaN ), false, "NaN value" );
@@ -591,7 +644,7 @@ QUnit.test( "jQuery('html')", function( assert ) {
 	assert.ok( s, "Creating a script" );
 	assert.ok( !jQuery[ "foo" ], "Make sure the script wasn't executed prematurely" );
 	jQuery( "body" ).append( "<script>jQuery.foo='test';</script>" );
-	assert.ok( jQuery[ "foo" ], "Executing a scripts contents in the right context" );
+	assert.ok( jQuery[ "foo" ], "Executing a script's contents in the right context" );
 
 	// Test multi-line HTML
 	div = jQuery( "<div>\r\nsome text\n<p>some p</p>\nmore text\r\n</div>" )[ 0 ];
@@ -915,7 +968,7 @@ QUnit.test( "jQuery.map", function( assert ) {
 	assert.ok( !result, "empty NodeList treated like array" );
 
 	result = jQuery.map( Array( 4 ), function( v, k ) {
-		return k % 2 ? k : [ k, k, k ];
+		return k % 2 ? k : [ k,k,k ];
 	} );
 	assert.equal( result.join( "" ), "00012223", "Array results flattened (#2616)" );
 } );
@@ -1067,7 +1120,7 @@ QUnit.test( "jQuery.grep(Array-like)", function( assert ) {
 		[],
 		"Satisfying elements absent, Array-like object used, and grep explicitly uninverted"
 	);
-} );
+});
 
 QUnit.test( "jQuery.extend(Object, Object)", function( assert ) {
 	assert.expect( 28 );
@@ -1185,19 +1238,19 @@ QUnit.test( "jQuery.extend(Object, Object)", function( assert ) {
 QUnit.test( "jQuery.extend(Object, Object {created with \"defineProperties\"})", function( assert ) {
 	assert.expect( 2 );
 
-	var definedObj = Object.defineProperties( {}, {
+	var definedObj = Object.defineProperties({}, {
         "enumerableProp": {
-          get: function() {
+          get: function () {
             return true;
           },
           enumerable: true
         },
         "nonenumerableProp": {
-          get: function() {
+          get: function () {
             return true;
           }
         }
-      } ),
+      }),
       accessorObj = {};
 
 	jQuery.extend( accessorObj, definedObj );
@@ -1216,7 +1269,7 @@ QUnit.test( "jQuery.extend(true,{},{a:[], o:{}}); deep copy with array, followed
 		// If "copyIsArray" doesn't get reset to false, the check
 		// will evaluate true and enter the array copy block
 		// instead of the object copy block. Since the ternary in the
-		// "copyIsArray" block will will evaluate to false
+		// "copyIsArray" block will evaluate to false
 		// (check if operating on an array with ), this will be
 		// replaced by an empty array.
 		object: {}
@@ -1255,7 +1308,7 @@ QUnit.test( "jQuery.each(Object,Function)", function( assert ) {
 	assert.deepEqual( seen, [ 1, 2 ], "Broken array iteration" );
 
 	seen = [];
-	jQuery.each( { "a": 1, "b": 2, "c": 3 }, function( k, v ) {
+	jQuery.each( { "a": 1, "b": 2,"c": 3 }, function( k, v ) {
 		seen.push( v );
 		return false;
 	} );
@@ -1375,7 +1428,7 @@ QUnit.test( "jQuery.makeArray", function( assert ) {
 
 	assert.equal( ( function() { return jQuery.makeArray( arguments ); } )( 1, 2 ).join( "" ), "12", "Pass makeArray an arguments array" );
 
-	assert.equal( jQuery.makeArray( [ 1, 2, 3 ] ).join( "" ), "123", "Pass makeArray a real array" );
+	assert.equal( jQuery.makeArray( [ 1,2,3 ] ).join( "" ), "123", "Pass makeArray a real array" );
 
 	assert.equal( jQuery.makeArray().length, 0, "Pass nothing to makeArray and expect an empty array" );
 
@@ -1472,132 +1525,75 @@ QUnit.test( "jQuery.proxy", function( assert ) {
 	cb.call( thisObject, "arg3" );
 } );
 
-QUnit.test("jQuery.parseHTML", function( assert ) {
-	assert.expect( 18 );
+QUnit.test( "jQuery.parseHTML", function( assert ) {
+	assert.expect( 23 );
 
 	var html, nodes;
 
-	assert.equal( jQuery.parseHTML(), null, "Nothing in, null out." );
-	assert.equal( jQuery.parseHTML( null ), null, "Null in, null out." );
-	assert.equal( jQuery.parseHTML( "" ), null, "Empty string in, null out." );
-	assert.throws(function() {
-		jQuery.parseHTML( "<div></div>", document.getElementById("form") );
-	}, "Passing an element as the context raises an exception (context should be a document)");
+	assert.deepEqual( jQuery.parseHTML(), [], "Without arguments" );
+	assert.deepEqual( jQuery.parseHTML( undefined ), [], "Undefined" );
+	assert.deepEqual( jQuery.parseHTML( null ), [], "Null" );
+	assert.deepEqual( jQuery.parseHTML( false ), [], "Boolean false" );
+	assert.deepEqual( jQuery.parseHTML( 0 ), [], "Zero" );
+	assert.deepEqual( jQuery.parseHTML( true ), [], "Boolean true" );
+	assert.deepEqual( jQuery.parseHTML( 42 ), [], "Positive number" );
+	assert.deepEqual( jQuery.parseHTML( "" ), [], "Empty string" );
+	assert.throws( function() {
+		jQuery.parseHTML( "<div></div>", document.getElementById( "form" ) );
+	}, "Passing an element as the context raises an exception (context should be a document)" );
 
-	nodes = jQuery.parseHTML( jQuery("body")[0].innerHTML );
+	nodes = jQuery.parseHTML( jQuery( "body" )[ 0 ].innerHTML );
 	assert.ok( nodes.length > 4, "Parse a large html string" );
 	assert.equal( jQuery.type( nodes ), "array", "parseHTML returns an array rather than a nodelist" );
 
 	html = "<script>undefined()</script>";
 	assert.equal( jQuery.parseHTML( html ).length, 0, "Ignore scripts by default" );
-	assert.equal( jQuery.parseHTML( html, true )[0].nodeName.toLowerCase(), "script", "Preserve scripts when requested" );
+	assert.equal( jQuery.parseHTML( html, true )[ 0 ].nodeName.toLowerCase(), "script", "Preserve scripts when requested" );
 
 	html += "<div></div>";
-	assert.equal( jQuery.parseHTML( html )[0].nodeName.toLowerCase(), "div", "Preserve non-script nodes" );
-	assert.equal( jQuery.parseHTML( html, true )[0].nodeName.toLowerCase(), "script", "Preserve script position");
+	assert.equal( jQuery.parseHTML( html )[ 0 ].nodeName.toLowerCase(), "div", "Preserve non-script nodes" );
+	assert.equal( jQuery.parseHTML( html, true )[ 0 ].nodeName.toLowerCase(), "script", "Preserve script position" );
 
-	assert.equal( jQuery.parseHTML("text")[0].nodeType, 3, "Parsing text returns a text node" );
-	assert.equal( jQuery.parseHTML( "\t<div></div>" )[0].nodeValue, "\t", "Preserve leading whitespace" );
+	assert.equal( jQuery.parseHTML( "text" )[ 0 ].nodeType, 3, "Parsing text returns a text node" );
+	assert.equal( jQuery.parseHTML( "\t<div></div>" )[ 0 ].nodeValue, "\t", "Preserve leading whitespace" );
 
-	assert.equal( jQuery.parseHTML(" <div/> ")[0].nodeType, 3, "Leading spaces are treated as text nodes (#11290)" );
+	assert.equal( jQuery.parseHTML( " <div/> " )[ 0 ].nodeType, 3, "Leading spaces are treated as text nodes (#11290)" );
 
 	html = jQuery.parseHTML( "<div>test div</div>" );
 
 	assert.equal( html[ 0 ].parentNode.nodeType, 11, "parentNode should be documentFragment" );
 	assert.equal( html[ 0 ].innerHTML, "test div", "Content should be preserved" );
 
-	assert.equal( jQuery.parseHTML("<span><span>").length, 1, "Incorrect html-strings should not break anything" );
-	assert.equal( jQuery.parseHTML("<td><td>")[ 1 ].parentNode.nodeType, 11,
+	assert.equal( jQuery.parseHTML( "<span><span>" ).length, 1, "Incorrect html-strings should not break anything" );
+	assert.equal( jQuery.parseHTML( "<td><td>" )[ 1 ].parentNode.nodeType, 11,
 		"parentNode should be documentFragment for wrapMap (variable in manipulation module) elements too" );
-	assert.ok( jQuery.parseHTML("<#if><tr><p>This is a test.</p></tr><#/if>") || true, "Garbage input should not cause error" );
-});
-
-QUnit.test( "jQuery.parseJSON", function( assert ) {
-	assert.expect( 20 );
-
-	assert.strictEqual( jQuery.parseJSON( null ), null, "primitive null" );
-	assert.strictEqual( jQuery.parseJSON( "0.88" ), 0.88, "Number" );
-	assert.strictEqual(
-		jQuery.parseJSON( "\" \\\" \\\\ \\/ \\b \\f \\n \\r \\t \\u007E \\u263a \"" ),
-		" \" \\ / \b \f \n \r \t ~ \u263A ",
-		"String escapes"
-	);
-	assert.deepEqual( jQuery.parseJSON( "{}" ), {}, "Empty object" );
-	assert.deepEqual( jQuery.parseJSON( "{\"test\":1}" ), { "test": 1 }, "Plain object" );
-	assert.deepEqual( jQuery.parseJSON( "[0]" ), [ 0 ], "Simple array" );
-
-	assert.deepEqual(
-		jQuery.parseJSON( "[ \"string\", -4.2, 2.7180e0, 3.14E-1, {}, [], true, false, null ]" ),
-		[ "string", -4.2, 2.718, 0.314, {}, [], true, false, null ],
-		"Array of all data types"
-	);
-	assert.deepEqual(
-		jQuery.parseJSON( "{ \"string\": \"\", \"number\": 4.2e+1, \"object\": {}," +
-			"\"array\": [[]], \"boolean\": [ true, false ], \"null\": null }" ),
-		{ string: "", number: 42, object: {}, array: [ [] ], "boolean": [ true, false ], "null": null },
-		"Dictionary of all data types"
-	);
-
-	assert.deepEqual( jQuery.parseJSON( "\n{\"test\":1}\t" ), { "test": 1 },
-		"Leading and trailing whitespace are ignored" );
-
-	assert.throws( function() {
-		jQuery.parseJSON();
-	}, null, "Undefined raises an error" );
-	assert.throws( function() {
-		jQuery.parseJSON( "" );
-	}, null, "Empty string raises an error" );
-	assert.throws( function() {
-		jQuery.parseJSON( "''" );
-	}, null, "Single-quoted string raises an error" );
-	/*
-
-	// Broken on IE8
-	assert.throws(function() {
-		jQuery.parseJSON("\" \\a \"");
-	}, null, "Invalid string escape raises an error" );
-
-	// Broken on IE8, Safari 5.1 Windows
-	assert.throws(function() {
-		jQuery.parseJSON("\"\t\"");
-	}, null, "Unescaped control character raises an error" );
-
-	// Broken on IE8
-	assert.throws(function() {
-		jQuery.parseJSON(".123");
-	}, null, "Number with no integer component raises an error" );
-
-	*/
-	assert.throws( function() {
-		var result = jQuery.parseJSON( "0101" );
-
-		// Support: IE9+
-		// Ensure base-10 interpretation on browsers that erroneously accept leading-zero numbers
-		if ( result === 101 ) {
-			throw new Error( "close enough" );
-		}
-	}, null, "Leading-zero number raises an error or is parsed as decimal" );
-	assert.throws( function() {
-		jQuery.parseJSON( "{a:1}" );
-	}, null, "Unquoted property raises an error" );
-	assert.throws( function() {
-		jQuery.parseJSON( "{'a':1}" );
-	}, null, "Single-quoted property raises an error" );
-	assert.throws( function() {
-		jQuery.parseJSON( "[,]" );
-	}, null, "Array element elision raises an error" );
-	assert.throws( function() {
-		jQuery.parseJSON( "{},[]" );
-	}, null, "Comma expression raises an error" );
-	assert.throws( function() {
-		jQuery.parseJSON( "[]\n,{}" );
-	}, null, "Newline-containing comma expression raises an error" );
-	assert.throws( function() {
-		jQuery.parseJSON( "\"\"\n\"\"" );
-	}, null, "Automatic semicolon insertion raises an error" );
-
-	assert.strictEqual( jQuery.parseJSON( [ 0 ] ), 0, "Input cast to string" );
+	assert.ok( jQuery.parseHTML( "<#if><tr><p>This is a test.</p></tr><#/if>" ) || true, "Garbage input should not cause error" );
 } );
+
+QUnit.test( "jQuery.parseHTML(<a href>) - gh-2965", function( assert ) {
+	assert.expect( 1 );
+
+	var html = "<a href='test.html'></a>",
+		href = jQuery.parseHTML( html )[ 0 ].href;
+
+	assert.ok( /\/test\.html$/.test( href ), "href is not lost after parsing anchor" );
+} );
+
+if ( jQuery.support.createHTMLDocument ) {
+	QUnit.asyncTest( "jQuery.parseHTML", function( assert ) {
+		assert.expect( 1 );
+
+		Globals.register( "parseHTMLError" );
+
+		jQuery.globalEval( "parseHTMLError = false;" );
+		jQuery.parseHTML( "<img src=x onerror='parseHTMLError = true'>" );
+
+		window.setTimeout( function() {
+			QUnit.start();
+			assert.equal( window.parseHTMLError, false, "onerror eventhandler has not been called." );
+		}, 2000 );
+	} );
+}
 
 QUnit.test( "jQuery.parseXML", function( assert ) {
 	assert.expect( 8 );
@@ -1639,7 +1635,7 @@ QUnit.test( "jQuery.camelCase()", function( assert ) {
 		"foo-bar": "fooBar",
 		"foo-bar-baz": "fooBarBaz",
 		"girl-u-want": "girlUWant",
-		"the-4th-dimension": "the4thDimension",
+		"the-4th-dimension": "the-4thDimension",
 		"-o-tannenbaum": "OTannenbaum",
 		"-moz-illa": "MozIlla",
 		"-ms-take": "msTake"
@@ -1652,14 +1648,14 @@ QUnit.test( "jQuery.camelCase()", function( assert ) {
 	} );
 } );
 
-testIframeWithCallback(
+testIframe(
 	"Conditional compilation compatibility (#13274)",
 	"core/cc_on.html",
-	function( cc_on, errors, $, assert ) {
+	function( assert, jQuery, window, document, cc_on, errors ) {
 		assert.expect( 3 );
 		assert.ok( true, "JScript conditional compilation " + ( cc_on ? "supported" : "not supported" ) );
 		assert.deepEqual( errors, [], "No errors" );
-		assert.ok( $(), "jQuery executes" );
+		assert.ok( jQuery(), "jQuery executes" );
 	}
 );
 
@@ -1667,29 +1663,29 @@ testIframeWithCallback(
 // This makes this test fail but it doesn't seem to cause any real-life problems so blacklisting
 // this test there is preferred to complicating the hard-to-test core/ready code further.
 if ( !/iphone os 7_/i.test( navigator.userAgent ) ) {
-	testIframeWithCallback(
+	testIframe(
 		"document ready when jQuery loaded asynchronously (#13655)",
 		"core/dynamic_ready.html",
-		function( ready, assert ) {
+		function( assert, jQuery, window, document, ready ) {
 			assert.expect( 1 );
 			assert.equal( true, ready, "document ready correctly fired when jQuery is loaded after DOMContentLoaded" );
 		}
 	);
 }
 
-testIframeWithCallback(
+testIframe(
 	"Tolerating alias-masked DOM properties (#14074)",
 	"core/aliased.html",
-	function( errors, assert ) {
+	function( assert, jQuery, window, document, errors ) {
 		assert.expect( 1 );
 		assert.deepEqual( errors, [], "jQuery loaded" );
 	}
 );
 
-testIframeWithCallback(
+testIframe(
 	"Don't call window.onready (#14802)",
 	"core/onready.html",
-	function( error, assert ) {
+	function( assert, jQuery, window, document, error ) {
 		assert.expect( 1 );
 		assert.equal( error, false, "no call to user-defined onready" );
 	}

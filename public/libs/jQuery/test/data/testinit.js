@@ -32,14 +32,14 @@ this.q = function() {
 
 /**
  * Asserts that a select matches the given IDs
- * @param {String} a - Assertion name
- * @param {String} b - Sizzle selector
- * @param {String} c - Array of ids to construct what is expected
- * @example t("Check for something", "//[a]", ["foo", "bar"]);
- * @result returns true if "//[a]" return two elements with the IDs 'foo' and 'bar'
+ * @param {String} message - Assertion name
+ * @param {String} selector - Sizzle selector
+ * @param {String} expectedIds - Array of ids to construct what is expected
+ * @param {(String|Node)=document} context - Selector context
+ * @example match("Check for something", "p", ["foo", "bar"]);
  */
-QUnit.assert.t = function( a, b, c ) {
-	var f = jQuery( b ).get(),
+function match( message, selector, expectedIds, context ) {
+	var f = jQuery( selector, context ).get(),
 		s = "",
 		i = 0;
 
@@ -47,7 +47,31 @@ QUnit.assert.t = function( a, b, c ) {
 		s += ( s && "," ) + '"' + f[ i ].id + '"';
 	}
 
-	this.deepEqual( f, q.apply( q, c ), a + " (" + b + ")" );
+	this.deepEqual( f, q.apply( q, expectedIds ), message + " (" + selector + ")" );
+}
+
+/**
+ * Asserts that a select matches the given IDs.
+ * The select is not bound by a context.
+ * @param {String} message - Assertion name
+ * @param {String} selector - Sizzle selector
+ * @param {String} expectedIds - Array of ids to construct what is expected
+ * @example t("Check for something", "p", ["foo", "bar"]);
+ */
+QUnit.assert.t = function( message, selector, expectedIds ) {
+	match( message, selector, expectedIds, undefined );
+};
+
+/**
+ * Asserts that a select matches the given IDs.
+ * The select is performed within the `#qunit-fixture` context.
+ * @param {String} message - Assertion name
+ * @param {String} selector - Sizzle selector
+ * @param {String} expectedIds - Array of ids to construct what is expected
+ * @example selectInFixture("Check for something", "p", ["foo", "bar"]);
+ */
+QUnit.assert.selectInFixture = function( message, selector, expectedIds ) {
+	match( message, selector, expectedIds, "#qunit-fixture" );
 };
 
 this.createDashboardXML = function() {
@@ -208,46 +232,15 @@ this.ajaxTest = function( title, expect, options ) {
 	} );
 };
 
-this.testIframe = function( fileName, name, fn ) {
-	QUnit.test( name, function( assert ) {
-		var done = assert.async();
-
-		// load fixture in iframe
-		var iframe = loadFixture(),
-			win = iframe.contentWindow,
-			interval = setInterval( function() {
-				if ( win && win.jQuery && win.jQuery.isReady ) {
-					clearInterval( interval );
-
-					// call actual tests passing the correct jQuery instance to use
-					fn.call( this, win.jQuery, win, win.document, assert );
-					done();
-					document.body.removeChild( iframe );
-					iframe = null;
-				}
-			}, 15 );
-	} );
-
-	function loadFixture() {
-		var src = url( "./data/" + fileName + ".html" ),
-			iframe = jQuery( "<iframe />" ).appendTo( "body" )[ 0 ];
-			iframe.style.cssText = "width: 500px; height: 500px; position: absolute; " +
-				"top: -600px; left: -600px; visibility: hidden;";
-
-		iframe.contentWindow.location = src;
-		return iframe;
-	}
-};
-
-this.testIframeWithCallback = function( title, fileName, func ) {
-	QUnit.test( title, 1, function( assert ) {
+this.testIframe = function( title, fileName, func ) {
+	QUnit.test( title, function( assert ) {
 		var iframe;
 		var done = assert.async();
 
 		window.iframeCallback = function() {
 			var args = Array.prototype.slice.call( arguments );
 
-			args.push( assert );
+			args.unshift( assert );
 
 			setTimeout( function() {
 				this.iframeCallback = undefined;
@@ -255,7 +248,6 @@ this.testIframeWithCallback = function( title, fileName, func ) {
 				func.apply( this, args );
 				func = function() {};
 				iframe.remove();
-
 				done();
 			} );
 		};
@@ -271,14 +263,13 @@ QUnit.config.autostart = false;
 this.loadTests = function() {
 
 	// Leverage QUnit URL parsing to detect testSwarm environment and "basic" testing mode
-	var loadSwarm = ( QUnit.urlParams[ "swarmURL" ] + "" ).indexOf( "http" ) === 0,
-		basicTests = ( QUnit.urlParams[ "module" ] + "" ) === "basic";
+	QUnit.isSwarm = ( QUnit.urlParams[ "swarmURL" ] + "" ).indexOf( "http" ) === 0;
+	QUnit.basicTests = ( QUnit.urlParams[ "module" ] + "" ) === "basic";
 
 	// Get testSubproject from testrunner first
 	require( [ "data/testrunner.js" ], function() {
 		var i = 0,
 			tests = [
-
 				// A special module with basic tests, meant for
 				// not fully supported environments like Android 2.3,
 				// jsdom or PhantomJS. We run it everywhere, though,
@@ -303,7 +294,9 @@ this.loadTests = function() {
 				"unit/ajax.js",
 				"unit/effects.js",
 				"unit/offset.js",
-				"unit/dimensions.js"
+				"unit/dimensions.js",
+				"unit/animation.js",
+				"unit/tween.js"
 			];
 
 		// Ensure load order (to preserve test numbers)
@@ -311,7 +304,7 @@ this.loadTests = function() {
 			var dep = tests[ i++ ];
 
 			if ( dep ) {
-				if ( !basicTests || i === 1 ) {
+				if ( !QUnit.basicTests || i === 1 ) {
 					require( [ dep ], loadDep );
 
 				// Support: Android 2.3 only
@@ -333,7 +326,7 @@ this.loadTests = function() {
 				}
 
 				// Load the TestSwarm listener if swarmURL is in the address.
-				if ( loadSwarm ) {
+				if ( QUnit.isSwarm ) {
 					require( [ "http://swarm.jquery.org/js/inject.js?" + ( new Date() ).getTime() ],
 					function() {
 						QUnit.start();
